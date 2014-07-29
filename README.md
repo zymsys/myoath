@@ -2,8 +2,17 @@
 
 This simple library wraps node's 
 [MySQL functions](https://github.com/felixge/node-mysql) in 
-[Q promises](https://github.com/kriskowal/q) and adds a 
-little convenience. If you need something that isn't here, feel free to send a
+[promises](https://www.promisejs.org/) and adds a 
+little convenience. The test suite tests that it works with the following
+promise libraries:
+
+* [Q](https://github.com/kriskowal/q)
+* [pimp](https://github.com/zeusdeux/pimp)
+* [Bluebird](https://github.com/petkaantonov/bluebird)
+* [RSVP](https://github.com/tildeio/rsvp.js)
+* [When](https://github.com/cujojs/when)
+
+If you need something that isn't here, feel free to send a
 pull request.
 
 I built this because I wanted a little more than the basics but not a full
