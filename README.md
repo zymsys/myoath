@@ -25,7 +25,7 @@ blown ORM.
             console.log("Got %d rows", results.rows.length);
         });
         
-### init(options)
+### MyOath(options) (constructor)
 
 The options are passed to 
 [mysql.createPool](https://github.com/felixge/node-mysql#pooling-connections)
