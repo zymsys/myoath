@@ -1,32 +1,48 @@
 "use strict";
 
 var mysql = require('mysql'),
-    Q = require('q');
+    defaultMyOath;
 
-var pool, loggers = [];
-
-function log(msg) {
-    loggers.forEach(function(l) {
-        l("MyOath: " + msg);
-    });
-}
-
-exports.addLogger = function (f) {
-    loggers.push(f);
+exports.MyOath = function(options) {
+    this.promises = options.promises || require('q');
+    this.pool = mysql.createPool(options);
+    this.loggers = [];
 };
 
-exports.removeLogger = function(f) {
+exports.MyOath.prototype.defer = function() {
+    var d = this.promises.defer ? this.promises.defer() : this.promises.deferred(),
+        prototype = Object.getPrototypeOf(d.promise);
+    //Polyfill from https://www.promisejs.org/polyfills/promise-done-1.0.0.js
+    if (!prototype.done) {
+        prototype.done = function (cb, eb) {
+            this.then(cb, eb).then(null, function (err) {
+                setTimeout(function () {
+                    throw err;
+                }, 0);
+            });
+        };
+    }
+    return d;
+};
+
+exports.MyOath.prototype.log = function(msg) {
+    this.loggers.forEach(function (l) {
+        l("MyOath: " + msg);
+    });
+};
+
+exports.MyOath.prototype.addLogger = function (f) {
+    this.loggers.push(f);
+};
+
+exports.MyOath.prototype.removeLogger = function (f) {
     var newList = [];
-    loggers.forEach(function (l) {
+    this.loggers.forEach(function (l) {
         if (f !== l) {
             newList.push(l);
         }
     });
-    loggers = newList;
-}
-
-exports.init = function (config) {
-    pool = mysql.createPool(config);
+    this.loggers = newList;
 };
 
 /**
@@ -37,22 +53,23 @@ exports.init = function (config) {
  * For example:
  *   db.exec('SELECT * FROM users WHERE id = ?', [userId]
  *     .then(function (result) {
- *       // ...
- *     });
+     *       // ...
+     *     });
  *
  * @param sql
  * @param [parameters]
- * @returns {defer.promise|*|promise|Q.promise}
+ * @returns {defer.promise|*|promise|promises.promise}
  */
-exports.exec = function (sql, parameters) {
-    var result = Q.defer();
-    log("Exec: " + sql);
-    pool.query(sql, parameters, function (err, rows, fields) {
+exports.MyOath.prototype.exec = function (sql, parameters) {
+    var self = this,
+        result = this.defer();
+    this.log("Exec: " + sql);
+    this.pool.query(sql, parameters, function (err, rows, fields) {
         if (err) {
-            log("Error: " + err.toString());
+            self.log("Error: " + err.toString());
             result.reject(new Error(err));
         } else {
-            log("Success");
+            self.log("Success");
             result.resolve({
                 rows: rows,
                 fields: fields
@@ -62,33 +79,40 @@ exports.exec = function (sql, parameters) {
     return result.promise;
 };
 
-exports.getStream = function (sql, parameters) {
-    var result = Q.defer();
-    var fields;
-    log("getStream: " + sql);
-    var query = pool.query(sql, parameters);
+exports.MyOath.prototype.getStream = function (sql, parameters) {
+    var self = this,
+        result = this.defer(),
+        fields;
+    self.log("getStream: " + sql);
+    if (!result.notify) {
+        result.reject(new Error(
+            "Can't getStream with promises libraries that don't support progress notification."
+        ));
+        return result.promise;
+    }
+    var query = self.pool.query(sql, parameters);
     query.on('error', function (error) {
-        log("Error: " + error.toString());
+        self.log("Error: " + error.toString());
         result.reject(error);
     });
     query.on('fields', function (fieldData) {
-        log("getStream Fields");
+        self.log("getStream Fields");
         fields = fieldData;
     });
     query.on('result', function (row) {
-        log("getStream row");
+        self.log("getStream row");
         result.notify(row);
     });
     query.on('end', function () {
-        log("getStream end");
+        self.log("getStream end");
         result.resolve(fields);
     });
     return result.promise;
 };
 
-exports.getOneRow = function(sql, parameters) {
-    var result = Q.defer();
-    exports.exec(sql, parameters)
+exports.MyOath.prototype.getOneRow = function (sql, parameters) {
+    var result = this.defer();
+    this.exec(sql, parameters)
         .then(function (r) {
             result.resolve(r.rows.length ? r.rows[0] : false);
         })
@@ -99,9 +123,9 @@ exports.getOneRow = function(sql, parameters) {
     return result.promise;
 };
 
-exports.getOneValue = function (sql, parameters) {
-    var result = Q.defer();
-    exports.exec(sql, parameters)
+exports.MyOath.prototype.getOneValue = function (sql, parameters) {
+    var result = this.defer();
+    this.exec(sql, parameters)
         .then(function (r) {
             var key;
             if (r.rows.length < 1) {
@@ -118,7 +142,7 @@ exports.getOneValue = function (sql, parameters) {
     return result.promise;
 };
 
-exports.add = function (table, data) {
+exports.MyOath.prototype.add = function (table, data) {
     var sql,
         columnName,
         parameters = [],
@@ -137,10 +161,10 @@ exports.add = function (table, data) {
         ") VALUES (" +
         values.join(", ") +
         ")";
-    return exports.exec(sql, parameters);
+    return this.exec(sql, parameters);
 };
 
-exports.set = function (table, identity, data) {
+exports.MyOath.prototype.set = function (table, identity, data) {
     var sql,
         columnName,
         parameters = [],
@@ -165,10 +189,10 @@ exports.set = function (table, identity, data) {
         " where (" +
         where.join(") and (") +
         ")";
-    return exports.exec(sql, parameters);
+    return this.exec(sql, parameters);
 };
 
-exports.delete = function (table, identity) {
+exports.MyOath.prototype.delete = function (table, identity) {
     var sql,
         columnName,
         parameters = [],
@@ -183,10 +207,10 @@ exports.delete = function (table, identity) {
     sql = "DELETE FROM `" + table + "` WHERE (" +
         where.join(") AND (") +
         ")";
-    return exports.getOneRow(sql, parameters);
+    return this.getOneRow(sql, parameters);
 };
 
-exports.get = function (table, identity) {
+exports.MyOath.prototype.get = function (table, identity) {
     var sql,
         columnName,
         parameters = [],
@@ -202,5 +226,5 @@ exports.get = function (table, identity) {
     sql = "SELECT * FROM `" + table + "` WHERE (" +
         where.join(") AND (") +
         ") LIMIT 1";
-    return exports.getOneRow(sql, parameters);
+    return this.getOneRow(sql, parameters);
 };

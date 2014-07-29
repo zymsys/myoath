@@ -20,10 +20,14 @@
     "url": "https://github.com/zymsys/myoath.git"
   },
   "dependencies": {
-    "q": "1.*",
     "mysql": "^2.4.0"
   },
   "devDependencies": {
+    "q": "1.*",
+    "pimp": "0.2.3",
+    "bluebird": "2.2.2",
+    "rsvp": "3.0.9",
+    "when": "3.4.2",
     "should": "4.*",
     "mocha": "^1.20.1"
   }

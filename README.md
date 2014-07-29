@@ -11,14 +11,13 @@ blown ORM.
 
 ## Using it
 
-    var db = require('myoath');
-    
-    db.init({
-        host: 'localhost',
-        user: 'root',
-        password: '',
-        database: 'db'
-    });
+    var DB = require('myoath'),
+        db = DB.MyOath({
+            host: 'localhost',
+            user: 'root',
+            password: '',
+            database: 'db'
+        });
     db.exec("SELECT * FROM t")
         .then(function (results) {
             //Results.rows contains all the query results.
@@ -31,6 +30,12 @@ blown ORM.
 The options are passed to 
 [mysql.createPool](https://github.com/felixge/node-mysql#pooling-connections)
 directly. Other methods will fail until this is called.
+
+An extra option ```promises``` is available to inject the promise library you 
+want to use. The object provided should offer a defer() or deferred() method
+which returns a deferred with at least resolve() and reject() methods. If you
+want to stream query results with ```getStream()``` then the deferred must 
+implement the notify() method.
 
 ### exec(sql, parameters)
 
