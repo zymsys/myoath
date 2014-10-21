@@ -21,7 +21,7 @@ blown ORM.
 ## Using it
 
     var DB = require('myoath'),
-        db = DB.MyOath({
+        db = new DB.MyOath({
             host: 'localhost',
             user: 'root',
             password: '',
