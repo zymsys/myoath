@@ -129,7 +129,7 @@ exports.MyOath.prototype.getOneValue = function (sql, parameters) {
         .then(function (r) {
             var key;
             if (r.rows.length < 1) {
-                r.reject(new Error("Requested one value but not no rows"));
+                result.reject(new Error("Requested one value but not no rows"));
                 return;
             }
             key = r.fields[0];
