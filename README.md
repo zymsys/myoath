@@ -164,3 +164,8 @@ console.log. If you want to store a log file you might want to consider
 something like [winston](https://github.com/flatiron/winston).
 
 All messages logged by MyOath will begin with "MyOath: ".
+
+### end()
+
+This closes the MySQL connection pool and returns a promise which resolves
+when all existing queries have completed.

@@ -7,13 +7,14 @@ function testWithPromises(promises, name) {
      * MySQL server database / connection.  All tests use a table called myoath_t
      * so it shouldn't conflict with existing table names.
      */
-    var db = new DB.MyOath({
-        host: 'localhost',
-        user: 'root',
-        password: '',
-        database: 'myoath',
-        promises: promises
-    });
+    var mySQLConfig = {
+            host: 'localhost',
+            user: 'root',
+            password: '',
+            database: 'myoath',
+            promises: promises
+        },
+        db = new DB.MyOath(mySQLConfig);
 
     //db.addLogger(console.log);
 
@@ -173,6 +174,28 @@ function testWithPromises(promises, name) {
                         .then(function (count) {
                             count.should.equal(2);
                             done();
+                        })
+                        .done();
+                })
+                .done();
+        });
+        it("can close the connection pool", function (done) {
+            db.exec("select * from myoath_t")
+                .then(function () {
+                    db.end()
+                        .then(function () {
+                            var error = false;
+                            db.exec("select * from myoath_t").then(
+                                function (result) {},
+                                function () {
+                                    error = true;
+                                }
+                            ).done(
+                                function () {
+                                    error.should.be.true;
+                                    done();
+                                }
+                            );
                         })
                         .done();
                 })

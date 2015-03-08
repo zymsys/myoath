@@ -1,6 +1,6 @@
 {
   "name": "myoath",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Promises for Node's MySQL Library",
   "keywords": [
     "q",
@@ -20,7 +20,7 @@
     "url": "https://github.com/zymsys/myoath.git"
   },
   "dependencies": {
-    "mysql": "^2.4.0"
+    "mysql": "2.*"
   },
   "devDependencies": {
     "q": "1.*",

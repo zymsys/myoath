@@ -238,5 +238,6 @@ exports.MyOath.prototype.end = function () {
         }
         result.resolve();
     });
+    return result.promise;
 };
 
