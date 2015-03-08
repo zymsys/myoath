@@ -63,7 +63,7 @@ exports.MyOath.prototype.removeLogger = function (f) {
 exports.MyOath.prototype.exec = function (sql, parameters) {
     var self = this,
         result = this.defer();
-    this.log("Exec: " + sql);
+    this.log("Exec: " + sql + "; " + JSON.stringify(parameters));
     this.pool.query(sql, parameters, function (err, rows, fields) {
         if (err) {
             self.log("Error: " + err.toString());
@@ -228,3 +228,15 @@ exports.MyOath.prototype.get = function (table, identity) {
         ") LIMIT 1";
     return this.getOneRow(sql, parameters);
 };
+
+exports.MyOath.prototype.end = function () {
+    var result = this.defer();
+    this.pool.end(function (err) {
+        if (err) {
+            result.reject();
+            end;
+        }
+        result.resolve();
+    });
+};
+
