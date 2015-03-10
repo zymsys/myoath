@@ -154,13 +154,26 @@ function testWithPromises(promises, name) {
                 })
                 .done();
         });
-        it("can set column values with shorthand", function (done) {
+        it("can set column values with shorthand for existing rows", function (done) {
             var columnData = {c: 'bazinga'};
-            db.set('myoath_t', {c: 'baz'}, columnData)
+            db.set('myoath_t', {id: 3}, columnData)
                 .then(function () {
                     db.get('myoath_t', columnData)
                         .then(function (row) {
                             row.id.should.equal(3);
+                            done();
+                        })
+                        .done();
+                })
+                .done();
+        });
+        it("can set column values with shorthand for new rows", function (done) {
+            var columnData = {c: 'bazinga'};
+            db.set('myoath_t', {id: 4}, columnData)
+                .then(function () {
+                    db.get('myoath_t', columnData)
+                        .then(function (row) {
+                            row.id.should.equal(4);
                             done();
                         })
                         .done();

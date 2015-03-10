@@ -169,7 +169,27 @@ exports.MyOath.prototype.set = function (table, identity, data) {
         columnName,
         parameters = [],
         where = [],
-        sets = [];
+        sets = [],
+        columns = [],
+        values = [];
+    //For insert
+    for (columnName in data) {
+        if (!data.hasOwnProperty(columnName)) {
+            continue;
+        }
+        parameters.push(data[columnName]);
+        columns.push("`" + columnName + "`");
+        values.push('?');
+    }
+    for (columnName in identity) {
+        if (!identity.hasOwnProperty(columnName)) {
+            continue;
+        }
+        parameters.push(identity[columnName]);
+        columns.push("`" + columnName + "`");
+        values.push('?');
+    }
+    //For update
     for (columnName in data) {
         if (!data.hasOwnProperty(columnName)) {
             continue;
@@ -177,18 +197,12 @@ exports.MyOath.prototype.set = function (table, identity, data) {
         sets.push("`" + columnName + "` = ?");
         parameters.push(data[columnName]);
     }
-    for (columnName in identity) {
-        if (!identity.hasOwnProperty(columnName)) {
-            continue;
-        }
-        where.push("`" + columnName + "` = ?");
-        parameters.push(identity[columnName]);
-    }
-    sql = "update `" + table + "` set " +
-        sets.join(", ") +
-        " where (" +
-        where.join(") and (") +
-        ")";
+    sql = "insert into `" + table + "` (" +
+        columns.join(', ') +
+        ") values (" +
+        values.join(', ') +
+        ") on duplicate key update " +
+        sets.join(", ");
     return this.exec(sql, parameters);
 };
 

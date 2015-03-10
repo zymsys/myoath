@@ -32,7 +32,8 @@ blown ORM.
             //Results.rows contains all the query results.
             //Results.fields contains the column information.
             console.log("Got %d rows", results.rows.length);
-        });
+        })
+        .done();
         
 ### MyOath(options) (constructor)
 
@@ -58,7 +59,8 @@ For example:
     db.exec('SELECT * FROM t WHERE c = ?', [c])
         .then(function (result) {
             // ...
-        });
+        })
+        .done();
 
 This will return all results at once and should only be used when reasonably
 small result sets are expected.
@@ -73,7 +75,8 @@ a row by primary key.
     db.getOneRow('SELECT * FROM t WHERE id = ?', [id])
         .then(function (row) {
             // ...
-        });
+        })
+        .done();
 
 ### getOneValue(sql, parameters)
 
@@ -83,20 +86,23 @@ value. It is useful when running a count(*) query for example.
     db.getOneValue('SELECT count(*) FROM t')
         .then(function (row) {
             // ...
-        });
+        })
+        .done();
 
 ### set(table, identity, data)
 
 This takes a table name, row identity information, and updated column data
-and generates and runs an update statement. It returns a promise which
-resolves when the update completes, or rejects with an error.
+and generates and runs an insert statement which updates in the event of a
+duplicate key. It returns a promise which resolves when the update completes,
+or rejects with an error.
 
 This is useful for easily updating rows.
 
     db.set('t', { id: 1 }, { c: 'foo' })
         .then(function () {
             // ...
-        });
+        })
+        .done();
 
 When building REST style services, this should help with PUT requests.
 
@@ -107,8 +113,9 @@ Gets a single row from table with the column data in identity.
     db.get('t', { id: 1 })
         .then(function (row) {
             // ...
-        });
-        
+        })
+        .done();
+
 When building REST style services, this should help with GET requests for
 single entities.
 
@@ -119,8 +126,9 @@ which resolves to an object which includes an insertId value.
 
     db.add('t', {
         c: 'foo'
-    });
-    
+    })
+    .done();
+
 When building REST style services, this should help with POST requests.
     
 ### delete(table, identity)
@@ -131,7 +139,8 @@ row count.
 
     db.delete('t', {
         id: 1
-    });
+    })
+    .done();
 
 When building REST style services, this should help with DELETE requests.
 
